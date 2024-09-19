@@ -1,4 +1,12 @@
-# DPCstruct
+<img align="right" src="logo.png" alt="Logo" width="150"/>
+<div id="toc">
+    <ul style="list-style: none;">
+    <summary>
+      <h1>DPCStruct</h1>
+    </summary>
+  </ul>
+</div>
+
 Unsupervised clustering algorithm for identifying and classifying protein domains based on structural similarity.
 
 ## Installation
@@ -15,8 +23,9 @@ DPCstruct is a pipeline consisting of a series of sequentail modules that are us
 prefilters: applies a series of filters to the alignments found with Foldseek.
 primarycluster: clusters the alignments per query sequence.
 secondarycluster: clusters the primary clusters.
-postfilters: removes redundancies from the secondary clusters.
 traceback: traces back the alignments to the original sequences.
+postfilters: removes redundancies from the secondary clusters.
+
 ```
 We've also included a script that runs the entire pipeline on an example dataset.
 
