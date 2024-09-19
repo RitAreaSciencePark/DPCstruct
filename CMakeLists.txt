@@ -39,15 +39,6 @@ endif()
 include(Catch)
 
 
-
-
-# # Include Catch2's CMake functions (e.g., catch_discover_tests)
-# set(CATCH2_DIR "/home/fbarone/win_doc/phd/dpcstruct/catch2") 
-# include_directories(${CATCH2_DIR}/include)
-# # Add Catch2's CMake functions (including catch_discover_tests)
-# list(APPEND CMAKE_MODULE_PATH "${CATCH2_DIR}/extras")
-# include(Catch)
-
 # Libraries ---------------------------------------------------------------
 
 add_library(lib_primarycluster STATIC
