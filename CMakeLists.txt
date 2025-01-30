@@ -124,7 +124,7 @@ install(TARGETS primarycluster secondarycluster traceback postfilters
 
 # add condition for building tests
 if (BUILD_TESTING)
-    find_package(Catch2 3 REQUIRED)Z
+    find_package(Catch2 3 REQUIRED)
     include(Catch)
     enable_testing()
     add_subdirectory(tests)
