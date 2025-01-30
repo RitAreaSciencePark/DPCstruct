@@ -1,12 +1,12 @@
-cmake_minimum_required(VERSION 3.11)
-project(DPCstruct)
+cmake_minimum_required(VERSION 3.19)
+project(dpcstruct)
 
 # Set the C++ standard to C++20
 set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
 # Optimization flags
-set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} -O3")
+set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} -O3 -Wall")
 
 # Include directories
 include_directories(
@@ -19,25 +19,7 @@ set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin)
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY_TESTS ${CMAKE_BINARY_DIR}/tests)  
 set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/lib)   
 
-
-# Catch2 ---------------------------------------------------------------
-
-
-find_package(Catch2 3 QUIET)
-
-if (NOT Catch2_FOUND)
-    message(STATUS "Catch2 not found, fetching it using FetchContent...")
-    include(FetchContent)
-    FetchContent_Declare(
-    Catch2
-    GIT_REPOSITORY https://github.com/catchorg/Catch2.git
-    GIT_TAG v3.7.0  # Replace with the desired Catch2 version
-    )
-    FetchContent_MakeAvailable(Catch2)
-endif()
-
-include(Catch)
-
+option(BUILD_TESTING "Build the tests" OFF)
 
 # Libraries ---------------------------------------------------------------
 
@@ -134,12 +116,20 @@ add_executable(postfilters
     src/postfilters.cc
 )
 
+install(TARGETS primarycluster secondarycluster traceback postfilters
+        DESTINATION bin
+)
+
 # Tests ---------------------------------------------------------------
 
-# Enable testing
-enable_testing()
+# add condition for building tests
+if (BUILD_TESTING)
+    find_package(Catch2 3 REQUIRED)Z
+    include(Catch)
+    enable_testing()
+    add_subdirectory(tests)
+endif()
 
-# Tests
-add_subdirectory(tests)
+
 
 
