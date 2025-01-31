@@ -64,7 +64,7 @@ public:
         // Default to showing help if no arguments are provided
         if (argc == 1) {
             print_usage(program_name_);
-            return {}; // Return an empty map, indicating that help was requested
+            exit(EXIT_SUCCESS); // Return an empty map, indicating that help was requested
         }
 
         int opt;
@@ -73,7 +73,7 @@ public:
         while ((opt = getopt(argc, argv, optstring_.c_str())) != -1) {
             if (opt == 'h') {
                 print_usage(program_name_);
-                return {}; // Return an empty map, indicating that help was requested
+                exit(EXIT_SUCCESS);
             }
 
             // Convert char option to string key
@@ -95,8 +95,8 @@ public:
             }
         } else if (optind < argc) {
             std::cerr << "Error: Positional arguments are not accepted." << std::endl;
-            print_usage(argv[0]);
-            exit(EXIT_FAILURE);
+            print_usage(program_name_);
+            exit(EXIT_SUCCESS);
         }
 
         // Check if all required options are present
@@ -139,7 +139,6 @@ private:
         }
 
         std::cerr << "Description:\n\t" << program_desc_ << "\n\n";
-        exit(EXIT_FAILURE);
     }
 
     void check_required_options(const std::map<std::string, std::string>& parsed_args) const {

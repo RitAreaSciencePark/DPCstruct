@@ -4,7 +4,7 @@
 SCRIPT_PATH="$(readlink -f "$0" 2>/dev/null || echo "$0")"
 SCRIPT_DIR="$(cd "$(dirname "$SCRIPT_PATH")" && pwd)"
 
-if [ $# -lt 1 ]; then
+usage() {
   echo "Usage: dpcstruct <subcommand> <options>"
   echo
   echo "Available subcommands:"
@@ -13,7 +13,17 @@ if [ $# -lt 1 ]; then
   echo "  secondarycluster  - Run the secondary cluster analysis"
   echo "  traceback         - Run the traceback analysis"
   echo "  postfilters       - Apply post filters to the analysis"
-  exit 1
+  echo
+}
+
+if [ $# -lt 1 ]; then
+  usage
+  exit 0
+fi
+
+if [ "$1" == "-h" ] || [ "$1" == "--help" ]; then
+  usage
+  exit 0
 fi
 
 subcommand="$1"
@@ -53,6 +63,10 @@ case "$subcommand" in
     ;;
   postfilters)
     run_subbinary "dpcstruct-postfilters" "$@"
+    ;;
+  # add help option
+  -h|--help)
+    usage
     ;;
   *)
     echo "Unknown subcommand: $subcommand"

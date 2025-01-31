@@ -183,18 +183,21 @@ void write_alignments(const std::string& filename, const std::vector<Alignment>&
     return;
 }
 
-int main(int argc, char* argv[]) {
-
+int prefilters_main(int argc, char* argv[]) {
     // Define program options
     std::vector<Option> options = {
         {'i', "ALIGNMENTS", "path to alignments file"},
         {'o', "OUTPUT", "output directory"},
         {'p', "PLDDTS", "path to PLDDTs directory"},
         {'m', "PROTS-LOOKUP", "protein lookup file"},
+        {'q', "PLDDT-THRESHOLD", "PLDDT threshold (default: 60.0)", false},
+        {'t', "TM-THRESHOLD", "TM-score threshold (default: 0.4)", false},
+        {'l', "LDDT-THRESHOLD", "LDDT threshold (default: 0.4)", false},
+        {'g', "GAPS-THRESHOLD", "Gaps threshold (default: 0.2)", false}
     };
 
     // Define the option string and program description
-    std::string optstring = "o:p:m:";
+    std::string optstring = "i:o:p:m:q:t:l:g:";
     std::string program_desc = "Filters alignments based on quality metrics.";
 
     // Create an OptionParser instance
@@ -206,6 +209,12 @@ int main(int argc, char* argv[]) {
     const std::string alignFilteredPath = parsed_args["o"];
     const std::string protsMapPath = parsed_args["m"];
     const std::string plddtsDir = parsed_args["p"];
+
+    // Filters with default values
+    double plddtThres = parsed_args.count("q") ? std::stod(parsed_args["q"]) : 60.0;
+    double tmThres = parsed_args.count("t") ? std::stod(parsed_args["t"]) : 0.4;
+    double lddtThres = parsed_args.count("l") ? std::stod(parsed_args["l"]) : 0.4;
+    double gapsThres = parsed_args.count("g") ? std::stod(parsed_args["g"]) : 0.2;
 
     if (!fs::is_regular_file(alignPath)) {
         std::cerr << "Error: Alignment file does not exist: " << alignPath << std::endl;
@@ -229,12 +238,6 @@ int main(int argc, char* argv[]) {
         return 1;
     }
 
-    // Filters
-    double plddtThres=60.;
-    double tmThres=0.4;
-    double lddtThres=0.4;
-    double gapsThres=0.2;
-    
     std::vector<std::string> plddtPaths;
     std::vector<std::string> descPaths;
 
@@ -359,4 +362,8 @@ int main(int argc, char* argv[]) {
     std::cout << "Done" << std::endl;
         
     return 0;
+}
+
+int main(int argc, char* argv[]) {
+    return prefilters_main(argc, argv);
 }

@@ -10,7 +10,7 @@ cleanup() {
     rm -rf ./example/output  
     echo "Cleanup complete."
 }
-trap cleanup EXIT
+# trap cleanup EXIT
 
 # This file contains a step-by-step guide on how to run the DPCstruct pipeline.
 # For this purpose we will use a small dataset of aroun 1250 proteins as an example.
@@ -55,14 +55,14 @@ alnsFilteredDir="./example/alns_filtered"
 alnsFiltered="${alnsFilteredDir}/alns_filtered.tsv"
 mkdir -p "${alnsFilteredDir}"
 
-./build/bin/prefilters ${alnsConverted} -m ${protLookup} -p ${plddtFiles} -o ${alnsFiltered}
+dpcstruct prefilters ${alnsConverted} -m ${protLookup} -p ${plddtFiles} -o ${alnsFiltered}
 
 ## 3. Primary clustering
 pcsDir="./example/primaryclusters"
 pcsFile="${pcsDir}/pcs.bin"
 mkdir -p "${pcsDir}"
 
-./build/bin/primarycluster -i ${alnsFiltered} -o ${pcsFile} -t 4
+dpcstruct primarycluster -i ${alnsFiltered} -o ${pcsFile} -t 4
 
 ## 4. Secondary clustering
 scDistDir="./example/secondaryclusters/distance"
@@ -72,15 +72,15 @@ scLabelsFile="${scLabelsDir}/sc_classification.txt"
 mkdir -p "${scDistDir}"
 mkdir -p "${scLabelsDir}"
 
-./build/bin/secondarycluster distance -i ${pcsFile} -j ${pcsFile} -o ${scDistFile} -p 1 -c 4 
-./build/bin/secondarycluster classify -i ${scDistFile} -o ${scLabelsFile}
+dpcstruct secondarycluster distance -i ${pcsFile} -j ${pcsFile} -o ${scDistFile} -p 1 -c 4 
+dpcstruct secondarycluster classify -i ${scDistFile} -o ${scLabelsFile}
 
 ## 5. Traceback
 tracebackDir="./example/output/binary"
 mkdir -p "${tracebackDir}"
-./build/bin/traceback ${pcsFile} -l ${scLabelsFile} -o ${tracebackDir}
+dpcstruct traceback ${pcsFile} -l ${scLabelsFile} -o ${tracebackDir}
 
 ## 6. Postfilter
 outputDir="./example/output"
 mkdir -p "./example/output"
-./build/bin/postfilters -i ${tracebackDir}/sequence-labels_1.bin -o ${outputDir}/sequence-labels_1.txt 
+dpcstruct postfilters -i ${tracebackDir}/sequence-labels_1.bin -o ${outputDir}/sequence-labels_1.txt 
