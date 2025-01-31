@@ -47,10 +47,23 @@ public:
 
     std::map<std::string, std::string> parse(int argc, char* argv[]) {
         std::map<std::string, std::string> parsed_args;
+        
+        // Extract the executable name from the full path
+        program_name_ = argv[0];
+        size_t last_slash = program_name_.find_last_of('/');
+        if (last_slash != std::string::npos) {
+            program_name_ = program_name_.substr(last_slash + 1);
+        }
+
+        // Remove the "dpcstruct-" prefix if it exists
+        const std::string prefix = "dpcstruct-";
+        if (program_name_.find(prefix) == 0) {
+            program_name_ = program_name_.substr(prefix.length());
+        }
 
         // Default to showing help if no arguments are provided
         if (argc == 1) {
-            print_usage(argv[0]);
+            print_usage(program_name_);
             return {}; // Return an empty map, indicating that help was requested
         }
 
@@ -59,7 +72,7 @@ public:
         // Parse the options using getopt
         while ((opt = getopt(argc, argv, optstring_.c_str())) != -1) {
             if (opt == 'h') {
-                print_usage(argv[0]);
+                print_usage(program_name_);
                 return {}; // Return an empty map, indicating that help was requested
             }
 
@@ -100,7 +113,7 @@ public:
 private:
     void print_usage(const std::string& program_name) const {
         std::cerr << "Usage: \n";
-        std::cerr << "\t" << program_name << " ";
+        std::cerr << "\t" << "dpcstruct " << program_name << " ";
 
         if (positional_arg_defined_) {
             std::cerr << positional_arg_name_ << " ";
@@ -134,7 +147,8 @@ private:
             if (opt.required) {
                 // Check if the required option is present in parsed_args
                 if (parsed_args.find(std::string(1, opt.short_name)) == parsed_args.end()) {
-                    std::cerr << "Error: Missing required option -" << opt.short_name << " " << opt.long_name << std::endl;
+                    std::cerr << "Error: Missing required option -" 
+                              << opt.short_name << " " << opt.long_name << std::endl;
                     exit(EXIT_FAILURE);
                 }
             }
@@ -143,6 +157,7 @@ private:
 
     std::vector<Option> options_;
     std::string optstring_;
+    std::string program_name_;
     std::string program_desc_;
     bool positional_arg_defined_ = false;
     std::string positional_arg_short_name_;
