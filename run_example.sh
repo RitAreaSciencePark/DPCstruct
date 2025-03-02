@@ -39,12 +39,18 @@ cleanup() {
 
 # We start the pipeline from the prefilter step:
 protLookup="./example/proteins.tsv"
-alnsConverted="./example/alns/alns.tsv"
-unzip ./example/alns/alns.zip -d ./example/alns
-# Check if the file was successfully extracted
-if [[ -f "$alnsConverted" ]]; then
-    echo "File $alnsConverted successfully extracted."
-else
+alnsDir="./example/alns"
+alnsConverted="${alnsDir}/alns.tsv"
+
+mkdir -p ${alnsDir}
+
+# Only unzip if the file does not exist.
+if [[ ! -f "$alnsConverted" ]]; then
+    unzip ./example/alns.zip -d ${alnsDir}
+fi
+
+# Check if the file exists after extraction.
+if [[ ! -f "$alnsConverted" ]]; then
     echo "Error: File $alnsConverted does not exist or failed to extract."
     exit 1
 fi
@@ -55,7 +61,7 @@ alnsFilteredDir="./example/alns_filtered"
 alnsFiltered="${alnsFilteredDir}/alns_filtered.tsv"
 mkdir -p "${alnsFilteredDir}"
 
-dpcstruct prefilters ${alnsConverted} -m ${protLookup} -p ${plddtFiles} -o ${alnsFiltered}
+dpcstruct prefilters -i ${alnsConverted} -m ${protLookup} -p ${plddtFiles} -o ${alnsFiltered}
 
 ## 3. Primary clustering
 pcsDir="./example/primaryclusters"
