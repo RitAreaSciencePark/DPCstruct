@@ -383,7 +383,9 @@ void run_classification(const std::vector<std::string> filesList, const std::str
     }
 
 
-    std::cout << "Finished distance matrix normalization" << std::endl;
+    std::cout << "Finished!" << std::endl;
+
+    std::cout << "Reassigning labels... " << std::endl;
 
     // repaint labels
     for (uint32_t i = 0; i < label.size(); ++i) {

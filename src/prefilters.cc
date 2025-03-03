@@ -87,43 +87,6 @@ void load_plddt_descriptors(const std::vector<std::string>& filenames, Descripto
     return;
 }
 
-
-// void load_alignments_old(const std::string filename, std::vector<Alignment>& aligns) {
-    
-//     std::ifstream file (filename);
-//     // reserve 4 GB of memory for the alignments
-    
-//     if (file) {
-//         std::streamsize fileSize = file.tellg();
-//         file.seekg(0, std::ios::beg);
-//         // Estimated average line length (in bytes)
-//         const size_t averageLineLength = 70; 
-//         const size_t numLines = fileSize / averageLineLength;
-//         aligns.reserve(numLines);
-
-//         // read filec content
-//         std::string line;
-//         uint32_t queryID, queryStart, queryEnd, queryLength;
-//         uint32_t searchID, searchStart, searchEnd, searchLength;
-//         uint32_t alnLength, bits;
-//         double pident, evalue;
-//         double tmScore, lddt;
-//         while (std::getline(file,line)){
-//             std::stringstream ss(line);
-//             if (ss >> queryID >> searchID >> queryStart >> queryEnd >> searchStart >> searchEnd >> 
-//                     queryLength >> searchLength >> alnLength >> pident >> evalue >> bits) {
-//                 aligns.emplace_back(queryID, searchID, queryStart, queryEnd, searchStart, searchEnd, 
-//                                         queryLength, searchLength, alnLength, pident, evalue, bits, tmScore, lddt);
-//             }
-//         }
-//     }
-//     else {
-//         std::cerr << "Failed to open file: " << filename << std::endl;
-//     }
-    
-//     return;
-// }
-
 // load file where each line is store in an std::vector<std::string>
 void load_idxname_map(const std::string& filename, std::vector<std::string>& idxToName) {
     std::ifstream file(filename);
@@ -188,8 +151,8 @@ int prefilters_main(int argc, char* argv[]) {
     std::vector<Option> options = {
         {'i', "ALIGNMENTS", "path to alignments file"},
         {'o', "OUTPUT", "output directory"},
-        {'p', "PLDDTS", "path to PLDDTs directory"},
-        {'m', "PROTS-LOOKUP", "protein lookup file"},
+        {'m', "PROTS-LOOKUP", "protein lookup file", false},
+        {'p', "PLDDTS", "path to PLDDTs directory", false},
         {'q', "PLDDT-THRESHOLD", "PLDDT threshold (default: 60.0)", false},
         {'t', "TM-THRESHOLD", "TM-score threshold (default: 0.4)", false},
         {'l', "LDDT-THRESHOLD", "LDDT threshold (default: 0.4)", false},
@@ -226,15 +189,22 @@ int prefilters_main(int argc, char* argv[]) {
         return 1;
     }
 
-    // check if plddtsDir exists
-    if (!fs::exists(plddtsDir)){
-        std::cerr << "PLDDTs directory does not exist: " << plddtsDir << std::endl;
-        return 1;
-    }
-
     // check if output file exists. exit with error if it does
     if (fs::exists(alignFilteredPath)){
         std::cerr << "Output file already exists: " << alignFilteredPath << std::endl;
+        return 1;
+    }
+
+    std::cout << "Loading alignments... " << std::flush;
+    std::vector<Alignment> aligns;
+    AlnsFileParser alnsParser(alignPath);
+    alnsParser.loadAlignments(aligns,1);
+    std::cout << "Done" << std::endl;
+
+    #if 0
+    // check if plddtsDir exists
+    if (!fs::exists(plddtsDir)){
+        std::cerr << "PLDDTs directory does not exist: " << plddtsDir << std::endl;
         return 1;
     }
 
@@ -264,24 +234,20 @@ int prefilters_main(int argc, char* argv[]) {
     load_plddt_descriptors(descPaths, plddtsDescriptor);
     std::cout << "Done" << std::endl;
 
-    std::cout << "Loading alignments... " << std::flush;
-    std::vector<Alignment> aligns;
-    AlnsFileParser alnsParser(alignPath);
-    alnsParser.loadAlignments(aligns,1);
-    std::cout << "Done" << std::endl;
-
     std::cout << "Loading idx to name map... " << std::flush;
     std::vector<std::string> idxToName;
     load_idxname_map(protsMapPath, idxToName);
     std::cout << "Done" << std::endl;
     
     std::cout << "Filtering alignments... " << std::flush;
+    std::vector<char> queryPLDDTs;
+    #endif
+
     // define a buffer for the filtered alignments
     std::vector<Alignment> alignsFiltered;
     alignsFiltered.reserve(aligns.size());
     
     uint32_t queryIDPrev = 0;
-    std::vector<char> queryPLDDTs;
     for (int i = 0; i < aligns.size(); i++) {
 
         uint32_t queryAlignLength = aligns[i].queryEnd - aligns[i].queryStart + 1;
@@ -307,7 +273,7 @@ int prefilters_main(int argc, char* argv[]) {
             continue;
         }
 
-
+        #if 0
         // PLDDT filters
         auto queryName = idxToName[aligns[i].queryID];
         auto queryStart = aligns[i].queryStart;
@@ -341,20 +307,14 @@ int prefilters_main(int argc, char* argv[]) {
             double searchPlddtSum = std::accumulate(searchPLDDTs.begin()+searchStart-1, searchPLDDTs.begin()+searchEnd, 0.0);
             double searchPlddtMean = searchPlddtSum / (searchEnd - searchStart + 1);
 
-            // std::cout << "i: " << i << std::endl;
-            // std::cout << aligns[i].searchID << " " << searchName << " " << searchStart << " " << searchEnd << " " << searchPlddtMean << std::endl;
-            // std::cout << aligns[i].queryID << " " << queryName << " " << queryStart << " " << queryEnd << " " << queryPlddtMean << std::endl; 
-            if (searchPlddtMean>=plddtThres){
-                alignsFiltered.push_back(aligns[i]);
+            if (searchPlddtMean<plddtThres){
+                continuel
             }            
         }
+        #endif
+        alignsFiltered.push_back(aligns[i]);
 
     }
-
-    std::cout << "Done" << std::endl;
-
-    std::cout << "Number of alignments: " << aligns.size() << std::endl;    
-    std::cout << "Number of alignments after filters: " << alignsFiltered.size() << std::endl;    
 
     // output alignsFiltered in a text file
     std::cout << "Writing filtered alignments... " << std::flush;
