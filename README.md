@@ -31,12 +31,15 @@ make -j 4
 make install
 ``````
 ## Usage
-DPCstruct consists of a series of sequential modules that are used to identify and classify protein domains based on structural similarity.
-The pipeline takes as input a set of local structural alignments generated with the software Foldseek. What follows is a quick guide on how to generate the local alignments. The output is a 'tsv' with 4 cols: protName, dom-start, dom-end, metaclusterID.
+DPCstruct takes as input a set of local structural alignments generated with the software Foldseek.
+Using  
+What follows is a step-by-step guide on how to generate the local alignments. 
+The output is a 'tsv' with 4 cols: protName, dom-start, dom-end, metaclusterID.
 
 ### All-vs-all alignments
 
-Given a folder containing a set of pdbs (*.pdb), the
+Given a folder containing a set of pdbs [*.pdb], the standard procedure to generate the local alignments is the following.
+For more information check [Foldseek](https://github.com/steineggerlab/foldseek) repo.
 
 ```
 # generate protein index table
@@ -66,9 +69,18 @@ Step 5) postfilters: removes redundancies from the secondary clusters.
 
 ```
 
-## Example
-
-
+## Example data
+In the folder `example` we included a toy dataset containing 1249 proteins to quickly test the pipeline.
+```
+├── alns.zip
+├── proteins.tsv
+└── database
+    ├── example_db*
+    └── plddts
+        └── plddts_compressed
+            ├── plddts_1.bin
+            └── plddts_desc_1.txt
+```
 
 ## Publications
 [Barone, F., Laio, A., Punta, M., Cozzini, S., Ansuini, A., & Cazzaniga, A. (2024). Unsupervised domain classification of AlphaFold2-predicted protein structures. bioRxiv, 2024-08.](https://doi.org/10.1101/2024.08.21.608992)
