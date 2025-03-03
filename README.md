@@ -33,7 +33,7 @@ make install
 ## Pipeline overview
 DPCstruct takes as input a set of local structural alignments generated with the software Foldseek.
 
-For a quick guide on how to generate Foldseek alignments compatible with DPCstruct pipeline see [How to generate all-vs-all](#generation-of-all-vs-all-alignments)/
+For a quick guide on how to generate Foldseek alignments compatible with DPCstruct pipeline see: [How to generate all-vs-all](#generation-of-all-vs-all-alignments)
 
 The output of the pipeline is a 'tsv' file containing DPCstruct classification: protIndex, dom-start, dom-end, metaclusterID.
 
