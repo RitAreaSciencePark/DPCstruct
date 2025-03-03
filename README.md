@@ -21,7 +21,7 @@ DPCstruct uses the [moodycamel::ConcurrentQueue library](https://github.com/came
 
 
 ## Installation
-To install DPCstruct, clone the repository and run the following command in the root directory:
+To install DPCstruct, clone the repository and run the following commands:
 ```
 git clone https://github.com/RitAreaSciencePark/DPCstruct.git
 cd DPCstruct
@@ -30,10 +30,14 @@ cmake -DCMAKE_INSTALL_PREFIX=/path/to/install ..
 make -j 4
 make install
 ``````
-## Usage
-DPCstruct takes as input a set of local structural alignments generated with the software Foldseek (see [How-to-all-vs-all](#generation-of-all-vs-all-alignments))
-The output of the pipeline is 'tsv' containing DPCstruct classification: protIndex, dom-start, dom-end, metaclusterID.
-To execute the different modules of the pipeline simply run the commands as follows:
+## Pipeline overview
+DPCstruct takes as input a set of local structural alignments generated with the software Foldseek.
+
+(see [How to generate all-vs-all](#generation-of-all-vs-all-alignments))
+
+The output of the pipeline is a 'tsv' file containing DPCstruct classification: protIndex, dom-start, dom-end, metaclusterID.
+
+The pipeline consists of the following modules, each with a dedicated help section explaining the different options available.
 
 ```
 dpcstruct <module> -h
@@ -46,7 +50,7 @@ Step 5) postfilters: removes redundancies from the secondary clusters.
 
 ```
 
-## Example data
+## Usage example
 The folder `example` contains a toy example to test the pipeline.
 To run the example you can simply execute `run_example.sh`.
 
