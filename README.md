@@ -70,17 +70,16 @@ Step 5) postfilters: removes redundancies from the secondary clusters.
 ```
 
 ## Example data
-In the folder `example` we included a toy dataset containing 1249 proteins to quickly test the pipeline.
-```
-├── alns.zip
-├── proteins.tsv
-└── database
-    ├── example_db*
-    └── plddts
-        └── plddts_compressed
-            ├── plddts_1.bin
-            └── plddts_desc_1.txt
-```
+The folder `example` contains a set of alignemnts generated using Foldseek on a set 1249 proteins.
+| File | Description |
+| ---  | --- |
+| proteins.tsv | list of proteins and their corresponding index |
+| alns.zip |  set of all-vs-all local alignments |  
+
+To run the example you can simply execute `run_example.sh`.
+The script also contains the set of commands needed to perform generate the local alignments.
+
+
 
 ## Publications
 [Barone, F., Laio, A., Punta, M., Cozzini, S., Ansuini, A., & Cazzaniga, A. (2024). Unsupervised domain classification of AlphaFold2-predicted protein structures. bioRxiv, 2024-08.](https://doi.org/10.1101/2024.08.21.608992)
