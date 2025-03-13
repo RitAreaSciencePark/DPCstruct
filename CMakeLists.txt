@@ -131,6 +131,8 @@ install(PROGRAMS ${CMAKE_SOURCE_DIR}/scripts/dpcstruct.sh
     RENAME dpcstruct
 )
 
+# Add utils directory
+add_subdirectory(util)
 
 # Tests ---------------------------------------------------------------
 

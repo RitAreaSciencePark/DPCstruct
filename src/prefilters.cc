@@ -33,7 +33,7 @@ void load_plddt_files(const std::vector<std::string>& filenames, std::vector<cha
             file.close();
         }
         else {
-            std::cerr << "Failed to open file: " << filename << std::endl;
+            std::cerr << "***Error: Failed to open file: " << filename << std::endl;
         }
     }
 
@@ -56,7 +56,7 @@ void load_plddt_files(const std::vector<std::string>& filenames, std::vector<cha
             file.close();
         }
         else {
-            std::cerr << "Failed to open file: " << filename << std::endl;
+            std::cerr << "***Error: Failed to open file: " << filename << std::endl;
         }
     }
 
@@ -151,7 +151,7 @@ int prefilters_main(int argc, char* argv[]) {
     std::vector<Option> options = {
         {'i', "ALIGNMENTS", "path to alignments file"},
         {'o', "OUTPUT", "output directory"},
-        {'m', "PROTS-LOOKUP", "protein lookup file", false},
+        {'m', "PROTS-LOOKUP", "protein lookup file"},
         {'p', "PLDDTS", "path to PLDDTs directory", false},
         {'q', "PLDDT-THRESHOLD", "PLDDT threshold (default: 60.0)", false},
         {'t', "TM-THRESHOLD", "TM-score threshold (default: 0.4)", false},
@@ -171,7 +171,15 @@ int prefilters_main(int argc, char* argv[]) {
     const std::string alignPath = parsed_args["i"];
     const std::string alignFilteredPath = parsed_args["o"];
     const std::string protsMapPath = parsed_args["m"];
-    const std::string plddtsDir = parsed_args["p"];
+
+    // Optional arguments
+    const std::string plddtsDir = parsed_args.count("p") ? parsed_args["p"] : "";
+    // if no plddsDir, set plddt Filter flag to false
+    bool applyPLDDTFilter = true;
+    if (plddtsDir.empty()) {
+        std::cerr << "PLDDTs directory not provided. Skipping PLDDT filter." << std::endl;
+        applyPLDDTFilter = false;
+    }
 
     // Filters with default values
     double plddtThres = parsed_args.count("q") ? std::stod(parsed_args["q"]) : 60.0;
@@ -201,47 +209,52 @@ int prefilters_main(int argc, char* argv[]) {
     alnsParser.loadAlignments(aligns,1);
     std::cout << "Done" << std::endl;
 
-    #if 0
-    // check if plddtsDir exists
-    if (!fs::exists(plddtsDir)){
-        std::cerr << "PLDDTs directory does not exist: " << plddtsDir << std::endl;
-        return 1;
-    }
 
-    std::vector<std::string> plddtPaths;
-    std::vector<std::string> descPaths;
 
-    // grab plddt and descriptor file protsMapPath
-    for (const auto & entry : std::filesystem::directory_iterator(plddtsDir)){
-        if (entry.is_regular_file()) {
-            std::string filepath = entry.path().string();
-            
-            if (filepath.ends_with(".bin")) {
-                plddtPaths.push_back(filepath);
-            } else if (filepath.ends_with(".txt")) {
-                descPaths.push_back(filepath);
-            }
-        }   
-    }
-
-    std::cout << "Loading plddt files... " << std::flush;
-    std::vector<char> plddtsBuffer;
-    load_plddt_files(plddtPaths, plddtsBuffer);
-    std::cout << "Done" << std::endl;
-
-    std::cout << "Loading plddt file descriptors... " << std::flush;
-    DescriptorMap plddtsDescriptor;
-    load_plddt_descriptors(descPaths, plddtsDescriptor);
-    std::cout << "Done" << std::endl;
-
-    std::cout << "Loading idx to name map... " << std::flush;
+    // Declare variables outside of the conditional block
     std::vector<std::string> idxToName;
-    load_idxname_map(protsMapPath, idxToName);
-    std::cout << "Done" << std::endl;
+    std::vector<char> plddtsBuffer;
+    DescriptorMap plddtsDescriptor;
+    std::vector<char> queryPLDDTs; 
+
+    if (applyPLDDTFilter){
+        // check if plddtsDir exists
+        if (!fs::exists(plddtsDir)){
+            std::cerr << "PLDDTs directory does not exist: " << plddtsDir << std::endl;
+            return 1;
+        }
     
+        std::vector<std::string> plddtPaths;
+        std::vector<std::string> descPaths;
+
+        // grab plddt and descriptor file protsMapPath
+        for (const auto & entry : std::filesystem::directory_iterator(plddtsDir)){
+            if (entry.is_regular_file()) {
+                std::string filepath = entry.path().string();
+                
+                if (filepath.ends_with(".bin")) {
+                    plddtPaths.push_back(filepath);
+                } else if (filepath.ends_with(".txt")) {
+                    descPaths.push_back(filepath);
+                }
+            }   
+        }
+
+        std::cout << "Loading plddt files... " << std::flush;
+        load_plddt_files(plddtPaths, plddtsBuffer);
+        std::cout << "Done" << std::endl;
+
+        std::cout << "Loading plddt file descriptors... " << std::flush;
+        load_plddt_descriptors(descPaths, plddtsDescriptor);
+        std::cout << "Done" << std::endl;
+
+        std::cout << "Loading idx to name map... " << std::flush;
+        load_idxname_map(protsMapPath, idxToName);
+        std::cout << "Done" << std::endl;
+
+    }
+
     std::cout << "Filtering alignments... " << std::flush;
-    std::vector<char> queryPLDDTs;
-    #endif
 
     // define a buffer for the filtered alignments
     std::vector<Alignment> alignsFiltered;
@@ -273,48 +286,50 @@ int prefilters_main(int argc, char* argv[]) {
             continue;
         }
 
-        #if 0
-        // PLDDT filters
-        auto queryName = idxToName[aligns[i].queryID];
-        auto queryStart = aligns[i].queryStart;
-        auto queryEnd = aligns[i].queryEnd;
+        if (applyPLDDTFilter){
+            // PLDDT filters
+            auto queryName = idxToName[aligns[i].queryID];
+            auto queryStart = aligns[i].queryStart;
+            auto queryEnd = aligns[i].queryEnd;
 
-        if (aligns[i].queryID != queryIDPrev) {
-            queryPLDDTs.clear();
-            queryPLDDTs = get_plddt(queryName, plddtsBuffer, plddtsDescriptor);
+            if (aligns[i].queryID != queryIDPrev) {
+                queryPLDDTs.clear();
+                queryPLDDTs = get_plddt(queryName, plddtsBuffer, plddtsDescriptor);
+            }
+            queryIDPrev = aligns[i].queryID;
+
+            if (queryPLDDTs.empty()){
+                std::cerr << "Failed to get plddt for: " << queryName << std::endl;
+                return 1;
+            }
+
+            double queryPlddtSum = std::accumulate(queryPLDDTs.begin() + queryStart-1, queryPLDDTs.begin()+queryEnd, 0.0);
+            double queryPlddtMean = queryPlddtSum / (queryEnd - queryStart + 1);
+
+            if (queryPlddtMean >= plddtThres){
+                auto searchName = idxToName[aligns[i].searchID];
+                auto searchStart = aligns[i].searchStart;
+                auto searchEnd = aligns[i].searchEnd;
+                
+                auto searchPLDDTs = get_plddt(searchName, plddtsBuffer, plddtsDescriptor);
+                if (searchPLDDTs.empty()){
+                    std::cerr << "Failed to get plddt for: " << searchName << std::endl;
+                    continue;
+                }  
+        
+                double searchPlddtSum = std::accumulate(searchPLDDTs.begin()+searchStart-1, searchPLDDTs.begin()+searchEnd, 0.0);
+                double searchPlddtMean = searchPlddtSum / (searchEnd - searchStart + 1);
+
+                if (searchPlddtMean<plddtThres){
+                    continue;
+                }            
+            }
         }
-        queryIDPrev = aligns[i].queryID;
-
-        if (queryPLDDTs.empty()){
-            std::cerr << "Failed to get plddt for: " << queryName << std::endl;
-            return 1;
-        }
-
-        double queryPlddtSum = std::accumulate(queryPLDDTs.begin() + queryStart-1, queryPLDDTs.begin()+queryEnd, 0.0);
-        double queryPlddtMean = queryPlddtSum / (queryEnd - queryStart + 1);
-
-        if (queryPlddtMean >= plddtThres){
-            auto searchName = idxToName[aligns[i].searchID];
-            auto searchStart = aligns[i].searchStart;
-            auto searchEnd = aligns[i].searchEnd;
-            
-            auto searchPLDDTs = get_plddt(searchName, plddtsBuffer, plddtsDescriptor);
-            if (searchPLDDTs.empty()){
-                std::cerr << "Failed to get plddt for: " << searchName << std::endl;
-                continue;
-            }  
-    
-            double searchPlddtSum = std::accumulate(searchPLDDTs.begin()+searchStart-1, searchPLDDTs.begin()+searchEnd, 0.0);
-            double searchPlddtMean = searchPlddtSum / (searchEnd - searchStart + 1);
-
-            if (searchPlddtMean<plddtThres){
-                continuel
-            }            
-        }
-        #endif
         alignsFiltered.push_back(aligns[i]);
 
     }
+
+    std::cout << "Done" << std::endl;
 
     // output alignsFiltered in a text file
     std::cout << "Writing filtered alignments... " << std::flush;

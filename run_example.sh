@@ -56,12 +56,11 @@ if [[ ! -f "$alnsConverted" ]]; then
 fi
 
 ## 2. Prefilters
-plddtFiles="./example/database/plddts/plddts_compressed"
 alnsFilteredDir="./example/alns_filtered"
 alnsFiltered="${alnsFilteredDir}/alns_filtered.tsv"
 mkdir -p "${alnsFilteredDir}"
 
-dpcstruct prefilters -i ${alnsConverted} -m ${protLookup} -p ${plddtFiles} -o ${alnsFiltered}
+dpcstruct prefilters -i ${alnsConverted} -m ${protLookup} -o ${alnsFiltered}
 
 ## 3. Primary clustering
 pcsDir="./example/primaryclusters"
@@ -79,7 +78,7 @@ mkdir -p "${scDistDir}"
 mkdir -p "${scLabelsDir}"
 
 dpcstruct secondarycluster distance -i ${pcsFile} -j ${pcsFile} -o ${scDistFile} -p 1 -c 4 
-dpcstruct secondarycluster classify -i ${scDistFile} -o ${scLabelsFile}
+dpcstruct secondarycluster classify ${scDistFile} -o ${scLabelsFile}
 
 ## 5. Traceback
 tracebackDir="./example/output/binary"

@@ -30,25 +30,38 @@ cmake -DCMAKE_INSTALL_PREFIX=/path/to/install ..
 make -j 4
 make install
 ``````
-## Pipeline overview
-DPCstruct takes as input a set of local structural alignments generated with the software Foldseek.
+# DPCstruct Pipeline Overview
 
-For a quick guide on how to generate Foldseek alignments compatible with DPCstruct pipeline see: [How to generate all-vs-all](#generation-of-all-vs-all-alignments)
+DPCstruct is designed to process local structural alignments produced by Foldseek, enabling comprehensive identification and classification of protein domains based on structural similarity. This guide explains each module in the pipeline and how it contributes to the overall process.
 
-The output of the pipeline is a 'tsv' file containing DPCstruct classification: protIndex, dom-start, dom-end, metaclusterID.
+## Generating Compatible Alignments
 
-The pipeline consists of the following modules, each with a dedicated help section explaining the different options available.
+To ensure compatibility with DPCstruct, please verify that your local alignments have the correct format.
+For detailed instructions on how to generate DPCstruct-compatible all-vs-all alignments, please refer to the [How to generate all-vs-all alignments](#generation-of-all-vs-all-alignments) section.
+
+## Pipeline Workflow
+
+The pipeline is organized into five main modules. Each module has dedicated commands and help documentation for a smooth execution:
 
 ```
 dpcstruct <module> -h
+
+Modules:
 
 Step 1) prefilters: applies a series of filters to the alignments found with Foldseek.
 Step 2) primarycluster: clusters local alignments per query sequence.
 Step 3) secondarycluster: clusters the primary clusters.
 Step 4) traceback: traces back the alignments to the original sequences.
 Step 5) postfilters: removes redundancies from the secondary clusters.
-
 ```
+
+## Output Format
+
+The final output is a TSV file which includes the following columns:
+- **protIndex:** Protein identifier.
+- **dom-start:** Starting index of the domain.
+- **dom-end:** Ending index of the domain.
+- **metaclusterID:** Identifier for the assigned structural metacluster.
 
 ## Usage example
 The folder `example` contains a toy example to test the pipeline.
@@ -80,8 +93,10 @@ foldseek createdb ${pdbsDir}$/ ${fsdbDir}/pdbs_db
 foldseek search ${queryDB} ${targetDB} ${alns} ${tmpDir} -a --threads ${SLURM_CPUS_PER_TASK} 
 foldseek convertalis ${queryDB} ${targetDB} ${alns} ${alnsConverted} --format-mode 4 --format-output query,target,qstart,qend,tstart,tend,qlen,tlen,alnlen,pident,evalue,bits,alntmscore,lddt
 ```
+## How to download Alphafold pLDDTs files
 
-
+If you are using protein structure predictions from AlphaFold, you will need to download the per-residue pLDDT values for each protein in your dataset.
+In the `./build/util/` folder, we provide an auxiliary script `download_plddts.sh` to download this information from the AlphaFold Database hosted on [Google Cloud Public Datasets](https://github.com/google-deepmind/alphafold/blob/main/afdb/README.md) and store it in a binary format compatible with the prefiltering module.
 
 ## Publications
 [Barone, F., Laio, A., Punta, M., Cozzini, S., Ansuini, A., & Cazzaniga, A. (2024). Unsupervised domain classification of AlphaFold2-predicted protein structures. bioRxiv, 2024-08.](https://doi.org/10.1101/2024.08.21.608992)

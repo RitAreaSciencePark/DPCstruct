@@ -14,13 +14,22 @@ int main(int argc, char** argv) {
     std::string suffix = argv[2];
     std::string outDir = argv[3];
 
-    // check if input or output directory does not exist
-    if (!std::filesystem::exists(plddtsJSONDir) || !std::filesystem::exists(outDir)){
+    
+
+    // check if input directory does not exist
+    if (!std::filesystem::exists(plddtsJSONDir)){
         std::cerr << "***Error: Input or output directory does not exist." << std::endl;
-        return 1;
+        return EXIT_FAILURE;
+    }
+
+    // check suffix valid
+    if (suffix.empty()){
+        std::cerr << "***Error: Suffix is empty." << std::endl;
+        return EXIT_FAILURE;
     }
 
     // iterate over files in directory
+
     std::string dictFilename = "plddts_desc_" + suffix + ".txt";
     std::string plddtsFilename = "plddts_" + suffix + ".bin";
     std::vector<std::string> af2Names;
@@ -28,7 +37,9 @@ int main(int argc, char** argv) {
     std::vector<uint8_t> plddts;
 
     for (const auto & entry : std::filesystem::directory_iterator(plddtsJSONDir)){
-
+        if(entry.path().extension() != ".json")
+            continue;
+        
         // basename of entry.path()
         std::string basename = entry.path().filename().string();
         
