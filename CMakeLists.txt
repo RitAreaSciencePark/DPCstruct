@@ -57,7 +57,18 @@ set_target_properties(memorymapped PROPERTIES
 )
 
 # openmp
-find_package(OpenMP REQUIRED)
+if(APPLE)
+  find_package(OpenMP)
+  if(OpenMP_FOUND)
+    message(STATUS "Found OpenMP on macOS")
+    set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} ${OpenMP_C_FLAGS}")
+    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${OpenMP_CXX_FLAGS}")
+  else()
+    message(WARNING "OpenMP not found on macOS. Please install llvm-openmp.")
+  endif()
+else()
+  find_package(OpenMP REQUIRED)
+endif()
 
 # Pipeline ---------------------------------------------------------------
 
